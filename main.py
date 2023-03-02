@@ -32,8 +32,6 @@ def main():
 
     # Setup configuration
     chatgpt_config = {
-        "email": os.environ["OPENAI_EMAIL"],
-        "password": os.environ["OPENAI_PASSWORD"],
         "openai_api_key": os.environ["OPENAI_API_KEY"],
     }
     telegram_config = {
