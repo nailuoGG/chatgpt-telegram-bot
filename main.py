@@ -20,7 +20,7 @@ def main():
     )
 
     # Check if the required environment variables are set
-    required_values = ["TELEGRAM_BOT_TOKEN", "OPENAI_EMAIL", "OPENAI_PASSWORD"]
+    required_values = ["TELEGRAM_BOT_TOKEN"]
     missing_values = [
         value for value in required_values if os.environ.get(value) is None
     ]
