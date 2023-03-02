@@ -3,7 +3,7 @@ import logging
 
 import telegram.constants as constants
 from httpx import HTTPError
-from revChatGPT.revChatGPT import AsyncChatbot as ChatGPT3Bot
+from revChatGPT.V3 import Chatbot as ChatGPT3Bot
 from telegram import Update, Message
 from telegram.error import RetryAfter, BadRequest
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
@@ -107,18 +107,17 @@ class ChatGPT3TelegramBot:
             # Start task to update the initial message periodically every 0.5 seconds
             # If you're frequently hitting rate limits, increase this interval
             message_update_task = context.application.create_task(message_update(every_seconds=0.5))
-
             # Stream the response
-            async for chunk in await self.gpt3_bot.get_chat_response(update.message.text, output='stream'):
+            for chunk in self.gpt3_bot.ask_stream(update.message.text):
                 if chunk_index == 0 and initial_message is None:
                     # Sends the initial message, to be edited later with updated text
                     initial_message = await context.bot.send_message(
                         chat_id=update.effective_chat.id,
                         reply_to_message_id=update.message.message_id,
-                        text=chunk['message']
+                        text=chunk
                     )
                     typing_task.cancel()
-                chunk_index, chunk_text = (chunk_index + 1, chunk['message'])
+                chunk_index, chunk_text = (chunk_index + 1, chunk_text + chunk)
 
             message_update_task.cancel()
 
@@ -141,7 +140,8 @@ class ChatGPT3TelegramBot:
         Gets the response from the ChatGPT APIs.
         """
         try:
-            response = await self.gpt3_bot.get_chat_response(message)
+            print('get_chatgpt_response')
+            response = await self.gpt3_bot.ask(message)
             return response
         except Exception as e:
             logging.info(f'Error while getting the response: {str(e)}')
